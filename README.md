@@ -16,10 +16,12 @@ Open http://localhost:8888
 
 ### Manual install
 
-Download the latest release from [GitHub Releases](https://github.com/renesenses/tune-macos/releases).
+Download the latest release for your architecture from [GitHub Releases](https://github.com/renesenses/tune-macos/releases):
+- `tune-server-*-macos-arm64.tar.gz` — Apple Silicon (M1/M2/M3/M4)
+- `tune-server-*-macos-x86_64.tar.gz` — Intel
 
 ```bash
-tar xzf tune-server-*-macos-arm64.tar.gz
+tar xzf tune-server-*-macos-$(uname -m).tar.gz
 cd tune-server
 cp .env.example .env    # edit as needed
 ./tune-server
@@ -59,7 +61,7 @@ Environment variables (set in `.env` or shell):
 ## Requirements
 
 - macOS 13+ (Ventura or later)
-- Apple Silicon (arm64) — Intel builds are possible but not pre-built
+- Apple Silicon (arm64) or Intel (x86_64)
 - FFmpeg (`brew install ffmpeg` — bundled in manual install)
 
 ## Building from source

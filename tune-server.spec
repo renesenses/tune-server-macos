@@ -1,11 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 """
-PyInstaller spec for tune-server (macOS arm64, onedir mode).
+PyInstaller spec for tune-server (macOS, onedir mode).
+Builds for the host architecture (arm64 or x86_64).
 
 Usage:
     pyinstaller tune-server.spec
 """
 
+import platform
 import sys
 from pathlib import Path
 from PyInstaller.utils.hooks import (
@@ -121,7 +123,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=True,
-    target_arch="arm64",
+    target_arch=platform.machine(),  # arm64 or x86_64
 )
 
 coll = COLLECT(

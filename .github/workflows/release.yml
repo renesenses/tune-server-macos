@@ -7,7 +7,14 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14  # Apple Silicon (arm64)
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14    # Apple Silicon
+            arch: arm64
+          - runner: macos-13    # Intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
 
@@ -40,17 +47,52 @@ jobs:
       - name: Read SHA256
         id: sha
         run: |
-          ARCH="$(uname -m)"
-          SHA=$(cat "dist/tune-server-${{ steps.version.outputs.version }}-macos-${ARCH}.tar.gz.sha256")
+          SHA=$(cat "dist/tune-server-${{ steps.version.outputs.version }}-macos-${{ matrix.arch }}.tar.gz.sha256")
           echo "sha256=${SHA}" >> "$GITHUB_OUTPUT"
-          echo "arch=${ARCH}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tune-server-${{ matrix.arch }}
+          path: |
+            dist/tune-server-*.tar.gz
+            dist/tune-server-*.tar.gz.sha256
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+          merge-multiple: true
+
+      - name: Read SHA256 values
+        id: sha
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARM_SHA=$(cat "artifacts/tune-server-${VERSION}-macos-arm64.tar.gz.sha256")
+          INTEL_SHA=$(cat "artifacts/tune-server-${VERSION}-macos-x86_64.tar.gz.sha256")
+          echo "arm64=${ARM_SHA}" >> "$GITHUB_OUTPUT"
+          echo "x86_64=${INTEL_SHA}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/tune-server-*.tar.gz
-            dist/tune-server-*.tar.gz.sha256
+            artifacts/tune-server-*.tar.gz
+            artifacts/tune-server-*.tar.gz.sha256
           body: |
             ## tune-server ${{ steps.version.outputs.version }}
 
@@ -63,45 +105,51 @@ jobs:
             brew services start tune-server
             ```
 
-            **Manual:**
+            **Manual (Apple Silicon):**
             ```bash
-            tar xzf tune-server-${{ steps.version.outputs.version }}-macos-${{ steps.sha.outputs.arch }}.tar.gz
-            cd tune-server
-            cp .env.example .env
-            ./tune-server
+            tar xzf tune-server-${{ steps.version.outputs.version }}-macos-arm64.tar.gz
+            cd tune-server && cp .env.example .env && ./tune-server
             ```
 
-            **SHA256:** `${{ steps.sha.outputs.sha256 }}`
+            **Manual (Intel):**
+            ```bash
+            tar xzf tune-server-${{ steps.version.outputs.version }}-macos-x86_64.tar.gz
+            cd tune-server && cp .env.example .env && ./tune-server
+            ```
+
+            ### SHA256
+            - **arm64:** `${{ steps.sha.outputs.arm64 }}`
+            - **x86_64:** `${{ steps.sha.outputs.x86_64 }}`
           generate_release_notes: true
 
-      - name: Update Homebrew formula SHA256
+      - name: Update Homebrew formula
         run: |
-          ARCH="${{ steps.sha.outputs.arch }}"
-          SHA="${{ steps.sha.outputs.sha256 }}"
           VERSION="${{ steps.version.outputs.version }}"
+          ARM_SHA="${{ steps.sha.outputs.arm64 }}"
+          INTEL_SHA="${{ steps.sha.outputs.x86_64 }}"
 
-          if [ "$ARCH" = "arm64" ]; then
-            sed -i '' "s/on_arm do/on_arm do/" Formula/tune-server.rb
-            # Update arm64 sha256 (first PLACEHOLDER or existing hash after on_arm)
-            python3 -c "
+          python3 -c "
           import re
           with open('Formula/tune-server.rb') as f:
               content = f.read()
           # Update version
-          content = re.sub(r'version \".*?\"', 'version \"$VERSION\"', content)
+          content = re.sub(r'version \".*?\"', 'version \"${VERSION}\"', content)
           # Update arm64 sha256 (first sha256 after on_arm)
           parts = content.split('on_arm do')
           if len(parts) == 2:
-              parts[1] = re.sub(r'sha256 \".*?\"', 'sha256 \"$SHA\"', parts[1], count=1)
+              parts[1] = re.sub(r'sha256 \".*?\"', 'sha256 \"${ARM_SHA}\"', parts[1], count=1)
               content = 'on_arm do'.join(parts)
+          # Update x86_64 sha256 (first sha256 after on_intel)
+          parts = content.split('on_intel do')
+          if len(parts) == 2:
+              parts[1] = re.sub(r'sha256 \".*?\"', 'sha256 \"${INTEL_SHA}\"', parts[1], count=1)
+              content = 'on_intel do'.join(parts)
           with open('Formula/tune-server.rb', 'w') as f:
               f.write(content)
           "
-          fi
 
-          # Commit updated formula
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/tune-server.rb
-          git diff --cached --quiet || git commit -m "formula: update SHA256 for v${VERSION}"
+          git diff --cached --quiet || git commit -m "formula: update to v${VERSION}"
           git push origin HEAD:main || true
