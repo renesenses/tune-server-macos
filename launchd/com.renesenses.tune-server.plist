@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.renesenses.tune-server</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/tune-server</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>TUNE_WEB_DIR</key>
+        <string>/usr/local/share/tune-server/web</string>
+        <key>TUNE_DB_PATH</key>
+        <string>/usr/local/var/tune-server/tune_server.db</string>
+        <key>TUNE_ARTWORK_CACHE_DIR</key>
+        <string>/usr/local/var/tune-server/artwork_cache</string>
+    </dict>
+
+    <key>WorkingDirectory</key>
+    <string>/usr/local/var/tune-server</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/usr/local/var/log/tune-server.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/usr/local/var/log/tune-server.log</string>
+</dict>
+</plist>

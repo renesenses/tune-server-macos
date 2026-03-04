@@ -1,0 +1,17 @@
+# Build artifacts
+build/
+dist/
+*.tar.gz
+*.sha256
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+venv/
+
+# Source checkouts
+src/
+
+# macOS
+.DS_Store
