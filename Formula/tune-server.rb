@@ -10,7 +10,7 @@ class TuneServer < Formula
 
   on_intel do
     url "https://github.com/renesenses/tune-macos/releases/download/v#{version}/tune-server-#{version}-macos-x86_64.tar.gz"
-    sha256 "PLACEHOLDER"
+    sha256 "f9067df82e98c9c1d9015eb9cabf548632c9e9b6e186b44912ce12ff644245e4"
   end
 
   depends_on "ffmpeg"
