@@ -20,15 +20,33 @@ SRC_DIR="$SCRIPT_DIR/src"
 
 echo "==> Checking prerequisites..."
 
-for cmd in python3 node npm ffmpeg ffprobe; do
+for cmd in node npm ffmpeg ffprobe; do
     if ! command -v "$cmd" &>/dev/null; then
         echo "ERROR: $cmd not found. Install it first:"
-        echo "  brew install python node ffmpeg"
+        echo "  brew install node ffmpeg"
         exit 1
     fi
 done
 
-echo "    Python:  $(python3 --version)"
+# Find Python 3.11+ (try versioned binaries first, then python3)
+PYTHON=""
+for py in python3.14 python3.13 python3.12 python3.11 python3; do
+    if command -v "$py" &>/dev/null; then
+        PY_VER=$("$py" -c "import sys; print(sys.version_info.minor)")
+        if [ "$PY_VER" -ge 11 ] 2>/dev/null; then
+            PYTHON="$py"
+            break
+        fi
+    fi
+done
+
+if [ -z "$PYTHON" ]; then
+    echo "ERROR: Python 3.11+ required. Install it:"
+    echo "  brew install python@3.14"
+    exit 1
+fi
+
+echo "    Python:  $($PYTHON --version)"
 echo "    Node:    $(node --version)"
 echo "    FFmpeg:  $(ffmpeg -version 2>&1 | head -1)"
 
@@ -66,8 +84,8 @@ cd "$SCRIPT_DIR"
 
 VENV="$SCRIPT_DIR/build/venv-dev"
 if [ ! -d "$VENV" ]; then
-    echo "==> Creating Python venv..."
-    python3 -m venv "$VENV"
+    echo "==> Creating Python venv with $PYTHON..."
+    "$PYTHON" -m venv "$VENV"
 fi
 
 source "$VENV/bin/activate"
