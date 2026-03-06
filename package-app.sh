@@ -164,6 +164,8 @@ cat > "$ENTITLEMENTS" <<PLIST
     <true/>
     <key>com.apple.security.cs.disable-library-validation</key>
     <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
 </dict>
 </plist>
 PLIST
@@ -182,6 +184,8 @@ cat > "$HELPER_ENTITLEMENTS" <<PLIST
     <key>com.apple.security.inherit</key>
     <true/>
     <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
     <true/>
 </dict>
 </plist>
@@ -250,14 +254,14 @@ fi
 
 # Sign all Mach-O binaries in Resources/_internal and tune-server-bin
 echo "    Signing libraries and binaries in _internal..."
-codesign --force --options runtime --timestamp \
+codesign --force --timestamp \
     --sign "$SIGNING_IDENTITY" \
     --entitlements "$HELPER_ENTITLEMENTS" \
     "$APP_DIR/Contents/Resources/tune-server-bin" 2>/dev/null || true
 find "$APP_DIR/Contents/Resources/_internal" -type f 2>/dev/null | while read -r f; do
     file_type=$(file -b "$f" 2>/dev/null)
     if [[ "$file_type" == *"Mach-O"* ]]; then
-        codesign --force --options runtime --timestamp \
+        codesign --force --timestamp \
             --sign "$SIGNING_IDENTITY" \
             "$f" 2>/dev/null || true
     fi
