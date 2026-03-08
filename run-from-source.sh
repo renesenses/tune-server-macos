@@ -108,4 +108,4 @@ export TUNE_FFMPEG_PATH="$(which ffmpeg)"
 export TUNE_FFPROBE_PATH="$(which ffprobe)"
 
 cd "$SRC_DIR/tune-server"
-python -m tune_server
+"$PYTHON" -m tune_server

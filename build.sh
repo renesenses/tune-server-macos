@@ -25,6 +25,27 @@ TUNE_WEB_REF="${TUNE_WEB_REF:-main}"
 
 echo "==> Building tune-server $VERSION for macOS $ARCH"
 
+# ---------- 0. Find Python 3.11+ ---------------------------------------------
+
+PYTHON=""
+for py in python3.14 python3.13 python3.12 python3.11 python3; do
+    if command -v "$py" &>/dev/null; then
+        PY_VER=$("$py" -c "import sys; print(sys.version_info.minor)")
+        if [ "$PY_VER" -ge 11 ] 2>/dev/null; then
+            PYTHON="$py"
+            break
+        fi
+    fi
+done
+
+if [ -z "$PYTHON" ]; then
+    echo "ERROR: Python 3.11+ required. Install it:"
+    echo "  brew install python@3.14"
+    exit 1
+fi
+
+echo "    Python: $($PYTHON --version)"
+
 # ---------- 1. Clone sources --------------------------------------------------
 
 mkdir -p "$SRC_DIR"
@@ -68,7 +89,7 @@ fi
 
 VENV="$BUILD_DIR/venv"
 echo "==> Setting up Python venv..."
-python3 -m venv "$VENV"
+"$PYTHON" -m venv "$VENV"
 source "$VENV/bin/activate"
 
 pip install --upgrade pip
