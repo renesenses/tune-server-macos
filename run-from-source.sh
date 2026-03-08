@@ -83,6 +83,14 @@ cd "$SCRIPT_DIR"
 # ---------- 4. Python venv + deps ---------------------------------------------
 
 VENV="$SCRIPT_DIR/build/venv-dev"
+# Recreate venv if it doesn't exist or was built with wrong Python
+if [ -d "$VENV" ]; then
+    VENV_VER=$("$VENV/bin/python" -c "import sys; print(sys.version_info.minor)" 2>/dev/null || echo "0")
+    if [ "$VENV_VER" -lt 11 ] 2>/dev/null; then
+        echo "==> Removing old venv (Python 3.$VENV_VER)..."
+        rm -rf "$VENV"
+    fi
+fi
 if [ ! -d "$VENV" ]; then
     echo "==> Creating Python venv with $PYTHON..."
     "$PYTHON" -m venv "$VENV"
