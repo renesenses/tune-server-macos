@@ -111,7 +111,7 @@ echo "    Press Ctrl+C to stop."
 echo ""
 
 export TUNE_WEB_DIR="$SRC_DIR/tune-web-client/dist"
-export TUNE_MUSIC_DIRS="$HOME/Music"
+export TUNE_MUSIC_DIRS="[\"$HOME/Music\"]"
 export TUNE_FFMPEG_PATH="$(which ffmpeg)"
 export TUNE_FFPROBE_PATH="$(which ffprobe)"
 
