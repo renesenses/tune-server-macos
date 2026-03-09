@@ -1,7 +1,7 @@
 class TuneServer < Formula
   desc "Multi-room audio server with streaming service integration"
   homepage "https://github.com/renesenses/tune-server"
-  version "0.1.0"
+  version "0.1.1"
 
   on_arm do
     url "https://github.com/renesenses/tune-macos/releases/download/v#{version}/tune-server-#{version}-macos-arm64.tar.gz"
