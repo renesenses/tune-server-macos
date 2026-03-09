@@ -179,7 +179,6 @@ if [ "${SKIP_FFMPEG:-0}" != "1" ]; then
             for dylib in "$STAGE/lib"/*.dylib; do
                 [ -f "$dylib" ] || continue
                 otool -L "$dylib" | awk '/\/opt\/homebrew|\/usr\/local/{print $1}' | while read -r dep; do
-                    local depname
                     depname="$(basename "$dep")"
                     if [ ! -f "$STAGE/lib/$depname" ]; then
                         cp "$dep" "$STAGE/lib/$depname" 2>/dev/null || true
