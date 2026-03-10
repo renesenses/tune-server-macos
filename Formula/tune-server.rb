@@ -4,12 +4,12 @@ class TuneServer < Formula
   version "0.1.2"
 
   on_arm do
-    url "https://github.com/renesenses/tune-macos/releases/download/v#{version}/tune-server-#{version}-macos-arm64.tar.gz"
+    url "https://github.com/renesenses/tune-server-macos/releases/download/v#{version}/tune-server-#{version}-macos-arm64.tar.gz"
     sha256 "6db84921c1af87de1bc410316d157fead5f6e11e5b5fceeca05561e7ee04b85d"
   end
 
   on_intel do
-    url "https://github.com/renesenses/tune-macos/releases/download/v#{version}/tune-server-#{version}-macos-x86_64.tar.gz"
+    url "https://github.com/renesenses/tune-server-macos/releases/download/v#{version}/tune-server-#{version}-macos-x86_64.tar.gz"
     sha256 "f9067df82e98c9c1d9015eb9cabf548632c9e9b6e186b44912ce12ff644245e4"
   end
 

@@ -107,7 +107,7 @@ jobs:
 
             **Homebrew (Apple Silicon):**
             ```bash
-            brew tap renesenses/tune https://github.com/renesenses/tune-macos
+            brew tap renesenses/tune https://github.com/renesenses/tune-server-macos
             brew install tune-server
             brew services start tune-server
             ```

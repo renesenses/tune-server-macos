@@ -26,7 +26,7 @@ Alternatively, install via Homebrew (Apple Silicon only, see below).
 ## Installation (Apple Silicon)
 
 ```bash
-brew tap renesenses/tune https://github.com/renesenses/tune-macos
+brew tap renesenses/tune https://github.com/renesenses/tune-server-macos
 brew install tune-server
 brew services start tune-server
 ```
@@ -52,8 +52,8 @@ If no Intel archive is available yet, build from source:
 brew install ffmpeg python@3.12 node
 
 # Build and run
-git clone https://github.com/renesenses/tune-macos.git
-cd tune-macos
+git clone https://github.com/renesenses/tune-server-macos.git
+cd tune-server-macos
 ./build.sh v0.1.2
 cd dist/tune-server
 ./tune-server
@@ -140,8 +140,8 @@ launchctl load ~/Library/LaunchAgents/com.renesenses.tune-server.plist
 ## Building from source
 
 ```bash
-git clone https://github.com/renesenses/tune-macos.git
-cd tune-macos
+git clone https://github.com/renesenses/tune-server-macos.git
+cd tune-server-macos
 ./build.sh v0.1.2
 ```
 
@@ -174,7 +174,7 @@ brew services restart tune-server
 ### Intel / Manual
 
 ```bash
-cd tune-macos
+cd tune-server-macos
 git pull
 ./build.sh v0.1.2
 ```
