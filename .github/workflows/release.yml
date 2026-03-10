@@ -10,10 +10,12 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-14    # Apple Silicon
+          - runner: macos-14    # Apple Silicon (native)
             arch: arm64
-          - runner: macos-13    # Intel
+            rosetta: false
+          - runner: macos-15    # Intel via Rosetta
             arch: x86_64
+            rosetta: true
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
@@ -22,17 +24,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Rosetta
+        if: matrix.rosetta
+        run: sudo softwareupdate --install-rosetta --agree-to-license
+
+      - name: Setup x86_64 Homebrew
+        if: matrix.rosetta
+        run: |
+          arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Install x86_64 dependencies
+        if: matrix.rosetta
+        run: |
+          arch -x86_64 /usr/local/bin/brew install python@3.12 ffmpeg node
+
       - name: Setup Node.js
+        if: "!matrix.rosetta"
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
       - name: Setup Python
+        if: "!matrix.rosetta"
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install FFmpeg
+      - name: Install FFmpeg (native)
+        if: "!matrix.rosetta"
         run: brew install ffmpeg
 
       - name: Extract version from tag
@@ -42,10 +61,20 @@ jobs:
       - name: Configure git for private repos
         run: git config --global url."https://x-access-token:${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
 
-      - name: Build
+      - name: Build (native)
+        if: "!matrix.rosetta"
         run: |
           chmod +x build.sh
           ./build.sh "${{ steps.version.outputs.version }}"
+
+      - name: Build (x86_64 via Rosetta)
+        if: matrix.rosetta
+        run: |
+          chmod +x build.sh
+          arch -x86_64 /bin/bash -c "
+            export PATH=/usr/local/bin:\$PATH
+            ./build.sh '${{ steps.version.outputs.version }}'
+          "
 
       - name: Read SHA256
         id: sha
