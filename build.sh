@@ -53,7 +53,7 @@ mkdir -p "$SRC_DIR"
 if [ ! -d "$SRC_DIR/tune-server" ]; then
     echo "==> Cloning tune-server ($TUNE_SERVER_REF)..."
     git clone --depth 1 --branch "$TUNE_SERVER_REF" \
-        https://github.com/renesenses/tune-server.git "$SRC_DIR/tune-server"
+        https://github.com/renesenses/tune-server-linux.git "$SRC_DIR/tune-server"
 else
     echo "==> Updating tune-server..."
     cd "$SRC_DIR/tune-server" && git fetch && git checkout "$TUNE_SERVER_REF" && git pull || true
