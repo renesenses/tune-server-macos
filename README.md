@@ -1,10 +1,23 @@
-# tune-macos
+# Tune Server — macOS Installation Guide
 
-Build & distribution tooling for [tune-server](https://github.com/renesenses/tune-server) on macOS.
+Multi-room audio server with DLNA/AirPlay output, streaming service integration, and web-based remote control.
 
-## Installation
+## Requirements
 
-### Homebrew (recommended)
+- macOS 13+ (Ventura or later)
+- Apple Silicon (arm64) or Intel (x86_64)
+- [Homebrew](https://brew.sh)
+
+## Check your architecture
+
+```bash
+uname -m
+```
+
+- `arm64` → Apple Silicon (M1/M2/M3/M4) → follow "Apple Silicon" section
+- `x86_64` → Intel → follow "Intel" section
+
+## Installation (Apple Silicon)
 
 ```bash
 brew tap renesenses/tune https://github.com/renesenses/tune-macos
@@ -14,28 +27,84 @@ brew services start tune-server
 
 Open http://localhost:8888
 
-### Manual install
+## Installation (Intel)
 
-Download the latest release for your architecture from [GitHub Releases](https://github.com/renesenses/tune-macos/releases):
-- `tune-server-*-macos-arm64.tar.gz` — Apple Silicon (M1/M2/M3/M4)
-- `tune-server-*-macos-x86_64.tar.gz` — Intel
+No Homebrew package for Intel yet. Build from source:
 
 ```bash
-tar xzf tune-server-*-macos-$(uname -m).tar.gz
-cd tune-server
-cp .env.example .env    # edit as needed
+# Prerequisites
+brew install ffmpeg python@3.12 node
+
+# Build and run
+git clone https://github.com/renesenses/tune-macos.git
+cd tune-macos
+./build.sh v0.1.2
+cd dist/tune-server
 ./tune-server
 ```
 
-#### Gatekeeper
+Open http://localhost:8888
 
-The binary is not signed. If macOS blocks it:
+### If macOS blocks the binary (Gatekeeper)
 
 ```bash
 xattr -cr ./tune-server
 ```
 
-#### Launchd (auto-start without Homebrew)
+Or go to **System Settings > Privacy & Security** and click **Open Anyway**.
+
+## Configuration
+
+By default, Tune scans `~/Music`. No `.env` file is needed — web UI, FFmpeg, and FFprobe are auto-detected next to the binary.
+
+To customize, create a `.env` file in the working directory:
+
+```
+TUNE_MUSIC_DIRS=["~/Music", "/Volumes/MyDrive/Music"]
+TUNE_LOG_LEVEL=INFO
+```
+
+### All settings
+
+| Variable | Default | Description |
+|---|---|---|
+| `TUNE_MUSIC_DIRS` | `["~/Music"]` | Music library directories (JSON array) |
+| `TUNE_API_PORT` | `8888` | API / Web UI port |
+| `TUNE_STREAM_PORT` | `8080` | Audio streaming port (for DLNA renderers) |
+| `TUNE_DB_PATH` | `tune_server.db` | SQLite database path |
+| `TUNE_ARTWORK_CACHE_DIR` | `artwork_cache` | Artwork cache directory |
+| `TUNE_FFMPEG_PATH` | auto-detected | Path to FFmpeg binary |
+| `TUNE_FFPROBE_PATH` | auto-detected | Path to FFprobe binary |
+| `TUNE_WEB_DIR` | auto-detected | Path to the web UI |
+| `TUNE_LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+
+## Usage
+
+- **Web UI**: http://localhost:8888
+- **Audio devices**: DLNA and AirPlay speakers on the local network are discovered automatically
+- **Streaming services**: Tidal, Qobuz, YouTube Music, Spotify, Deezer — configure from the web UI
+- **Force device rescan**: `POST http://localhost:8888/api/v1/devices/scan`
+
+## Useful commands
+
+```bash
+# Start the service
+brew services start tune-server
+
+# Stop the service
+brew services stop tune-server
+
+# Restart
+brew services restart tune-server
+
+# View logs
+cat /opt/homebrew/var/log/tune-server.log
+
+# Restart in debug mode
+TUNE_LOG_LEVEL=DEBUG brew services restart tune-server
+```
+
+## Auto-start without Homebrew (launchd)
 
 ```bash
 mkdir -p ~/Library/LaunchAgents
@@ -45,36 +114,23 @@ cp extras/com.renesenses.tune-server.plist ~/Library/LaunchAgents/
 launchctl load ~/Library/LaunchAgents/com.renesenses.tune-server.plist
 ```
 
-## Configuration
-
-Environment variables (set in `.env` or shell):
-
-| Variable | Default | Description |
-|---|---|---|
-| `TUNE_MUSIC_DIRS` | `~/Music` | Music library directories (comma-separated) |
-| `TUNE_WEB_DIR` | `./web` | Web UI directory |
-| `TUNE_DB_PATH` | `./tune_server.db` | SQLite database path |
-| `TUNE_ARTWORK_CACHE_DIR` | `./artwork_cache` | Artwork cache directory |
-| `TUNE_FFMPEG_PATH` | `ffmpeg` | Path to FFmpeg binary |
-| `TUNE_FFPROBE_PATH` | `ffprobe` | Path to FFprobe binary |
-
-## Requirements
-
-- macOS 13+ (Ventura or later)
-- Apple Silicon (arm64) or Intel (x86_64)
-- FFmpeg (`brew install ffmpeg` — bundled in manual install)
-
 ## Building from source
 
 ```bash
 git clone https://github.com/renesenses/tune-macos.git
 cd tune-macos
-./build.sh v0.1.0
+./build.sh v0.1.2
 ```
 
-The build script clones tune-server and tune-web-client, builds the web UI, creates a Python venv, runs PyInstaller, and packages everything into a `.tar.gz`.
+The build script clones tune-server and tune-web-client, builds the Svelte web UI, creates a Python venv, runs PyInstaller, bundles FFmpeg, and packages everything into a `.tar.gz`.
 
-Environment variables for the build:
+### Build prerequisites
+
+- Python 3.11+
+- Node.js 18+
+- FFmpeg (`brew install ffmpeg`)
+
+### Build environment variables
 
 | Variable | Default | Description |
 |---|---|---|
@@ -85,12 +141,24 @@ Environment variables for the build:
 
 ## Updating
 
+### Homebrew (Apple Silicon)
+
 ```bash
 brew upgrade tune-server
 brew services restart tune-server
 ```
 
+### Intel / Manual
+
+```bash
+cd tune-macos
+git pull
+./build.sh v0.1.2
+```
+
 ## Uninstalling
+
+### Homebrew
 
 ```bash
 brew services stop tune-server
@@ -98,3 +166,22 @@ brew uninstall tune-server
 brew untap renesenses/tune
 # Data remains in /opt/homebrew/var/tune-server/ — delete manually if needed
 ```
+
+### Manual
+
+```bash
+launchctl unload ~/Library/LaunchAgents/com.renesenses.tune-server.plist 2>/dev/null
+rm ~/Library/LaunchAgents/com.renesenses.tune-server.plist 2>/dev/null
+rm -rf /path/to/tune-server/
+```
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| macOS blocks the binary | `xattr -cr ./tune-server` or System Settings > Privacy & Security > Open Anyway |
+| No devices found | Check that speakers are on the same Wi-Fi network |
+| Port 8888 already in use | Add `TUNE_API_PORT=9999` to `.env` |
+| FFmpeg not found | `brew install ffmpeg` |
+| Web UI not showing (JSON response) | Set `TUNE_WEB_DIR=./web` in `.env` (should be auto-detected in v0.1.2+) |
+| PortAudio crash on old Mac | Update to v0.1.2+ (auto-recovery added) |
