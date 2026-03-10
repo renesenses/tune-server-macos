@@ -12,10 +12,8 @@ jobs:
         include:
           - runner: macos-14    # Apple Silicon
             arch: arm64
-          # Intel build requires macos-13 (deprecated on free runners)
-          # Build x86_64 locally: ./build.sh <version> on an Intel Mac
-          # - runner: macos-13
-          #   arch: x86_64
+          - runner: macos-13    # Intel
+            arch: x86_64
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
@@ -108,7 +106,7 @@ jobs:
 
             ### Installation
 
-            **Homebrew (Apple Silicon):**
+            **Homebrew:**
             ```bash
             brew tap renesenses/tune https://github.com/renesenses/tune-server-macos
             brew install tune-server
@@ -121,14 +119,22 @@ jobs:
             cd tune-server && ./tune-server
             ```
 
+            **Manual (Intel):**
+            ```bash
+            tar xzf tune-server-${{ steps.version.outputs.version }}-macos-x86_64.tar.gz
+            cd tune-server && ./tune-server
+            ```
+
             ### SHA256
             - **arm64:** `${{ steps.sha.outputs.arm64 }}`
+            - **x86_64:** `${{ steps.sha.outputs.x86_64 }}`
           generate_release_notes: true
 
       - name: Update Homebrew formula
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           ARM_SHA="${{ steps.sha.outputs.arm64 }}"
+          INTEL_SHA="${{ steps.sha.outputs.x86_64 }}"
 
           python3 -c "
           import re
@@ -139,6 +145,10 @@ jobs:
           if len(parts) == 2:
               parts[1] = re.sub(r'sha256 \".*?\"', 'sha256 \"${ARM_SHA}\"', parts[1], count=1)
               content = 'on_arm do'.join(parts)
+          parts = content.split('on_intel do')
+          if len(parts) == 2:
+              parts[1] = re.sub(r'sha256 \".*?\"', 'sha256 \"${INTEL_SHA}\"', parts[1], count=1)
+              content = 'on_intel do'.join(parts)
           with open('Formula/tune-server.rb', 'w') as f:
               f.write(content)
           "
