@@ -17,6 +17,12 @@ uname -m
 - `arm64` → Apple Silicon (M1/M2/M3/M4) → follow "Apple Silicon" section
 - `x86_64` → Intel → follow "Intel" section
 
+## Download
+
+Releases are available at **https://mozaiklabs.fr/download** — no GitHub account needed.
+
+Alternatively, install via Homebrew (Apple Silicon only, see below).
+
 ## Installation (Apple Silicon)
 
 ```bash
@@ -29,7 +35,17 @@ Open http://localhost:8888
 
 ## Installation (Intel)
 
-No Homebrew package for Intel yet. Build from source:
+Download the Intel archive from **https://mozaiklabs.fr/download**, then:
+
+```bash
+tar xzf tune-server-*-macos-x86_64.tar.gz
+cd tune-server
+./tune-server
+```
+
+Open http://localhost:8888
+
+If no Intel archive is available yet, build from source:
 
 ```bash
 # Prerequisites
@@ -42,8 +58,6 @@ cd tune-macos
 cd dist/tune-server
 ./tune-server
 ```
-
-Open http://localhost:8888
 
 ### If macOS blocks the binary (Gatekeeper)
 
@@ -77,6 +91,15 @@ TUNE_LOG_LEVEL=INFO
 | `TUNE_FFPROBE_PATH` | auto-detected | Path to FFprobe binary |
 | `TUNE_WEB_DIR` | auto-detected | Path to the web UI |
 | `TUNE_LOG_LEVEL` | `INFO` | Logging level (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
+
+## Getting started
+
+Once the server is running, open http://localhost:8888 in your browser.
+
+1. **Create a zone** — A zone is an audio output (speakers, DAC, AirPlay device...). On first launch, no zone exists. Go to the zone panel and create one by selecting an available audio output (local soundcard, DLNA renderer, or AirPlay device).
+2. **Browse your library** — Your `~/Music` folder is scanned automatically. Albums, artists, and tracks appear in the library.
+3. **Play music** — Select a track or album and assign it to your zone. Playback starts immediately.
+4. **Connect streaming services** (optional) — Go to Settings to link Tidal, Qobuz, Spotify, YouTube Music, or Deezer.
 
 ## Usage
 
