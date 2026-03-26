@@ -1,11 +1,16 @@
 class TuneServer < Formula
   desc "Multi-room audio server with streaming service integration"
-  homepage "https://github.com/renesenses/tune-server"
-  version "0.2.1"
+  homepage "https://github.com/renesenses/tune-server-linux"
+  version "0.2.2"
+
+  on_arm do
+    url "https://github.com/renesenses/tune-server-linux/releases/download/v#{version}/tune-server-#{version}-macos.tar.gz"
+    sha256 "dad322bf6341e08b7925f3f9ceb2b7784476102ceaa37cd20445a0d0e1ecddd4"
+  end
 
   on_intel do
-    url "https://github.com/renesenses/tune-server-macos/releases/download/v#{version}/tune-server-#{version}-macos-x86_64.tar.gz"
-    sha256 "ec6ccb6516ab9fd4d111d4ff9fe4426ff3ad1146da06b9342f9b347f1ef7e75f"
+    url "https://github.com/renesenses/tune-server-linux/releases/download/v#{version}/tune-server-#{version}-macos-intel.tar.gz"
+    sha256 "e12b5db29db45b17d6d1814808cb5eab44784fe3a28c8e8d25b58d1b96de0245"
   end
 
   depends_on "ffmpeg"
